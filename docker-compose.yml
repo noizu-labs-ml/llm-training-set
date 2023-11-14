@@ -1,0 +1,27 @@
+version: "3.9"
+networks:
+  synthetics-network:
+services:
+  redis:
+    container_name: synthetics-redis
+    hostname: synthetics-redis
+    image: "redis:alpine"
+    logging:
+      driver: "none"
+    ports:
+      - 127.0.0.1:5510:6379
+    networks:
+      - synthetics-network
+  database:
+    container_name: synthetics-database
+    hostname: synthetics-database
+    image: "timescale/timescaledb-ha:pg15.5-ts2.12.2-all"
+    logging:
+      driver: "none"
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=synthetics
+    ports:
+      - 127.0.0.1:5511:5432
+    networks:
+      - synthetics-network
