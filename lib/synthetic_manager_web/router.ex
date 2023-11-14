@@ -18,6 +18,18 @@ defmodule SyntheticManagerWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+
+    live "/features", FeatureLive.Index, :index
+    live "/features/new", FeatureLive.Index, :new
+    live "/features/:id/edit", FeatureLive.Index, :edit
+    live "/features/:id", FeatureLive.Show, :show
+    live "/features/:id/show/edit", FeatureLive.Show, :edit
+
+    live "/synthetic-groups", SyntheticGroupLive.Index, :index
+    live "/synthetic-groups/new", SyntheticGroupLive.Index, :new
+    live "/synthetic-groups/:id/edit", SyntheticGroupLive.Index, :edit
+    live "/synthetic-groups/:id", SyntheticGroupLive.Show, :show
+    live "/synthetic-groups/:id/show/edit", SyntheticGroupLive.Show, :edit
   end
 
   # Other scopes may use custom stacks.

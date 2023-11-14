@@ -1,0 +1,47 @@
+<.header>
+  Listing Features
+  <:actions>
+    <.link patch={~p"/features/new"}>
+      <.button>New Feature</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="features"
+  rows={@streams.features}
+  row_click={fn {_id, feature} -> JS.navigate(~p"/features/#{feature}") end}
+>
+  <:col :let={{_id, feature}} label="Name"><%= feature.name %></:col>
+  <:col :let={{_id, feature}} label="Description"><%= feature.description %></:col>
+  <:action :let={{_id, feature}}>
+    <div class="sr-only">
+      <.link navigate={~p"/features/#{feature}"}>Show</.link>
+    </div>
+    <.link patch={~p"/features/#{feature}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, feature}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: feature.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="feature-modal"
+  show
+  on_cancel={JS.patch(~p"/features")}
+>
+  <.live_component
+    module={SyntheticManagerWeb.FeatureLive.FormComponent}
+    id={@feature.id || :new}
+    title={@page_title}
+    action={@live_action}
+    feature={@feature}
+    patch={~p"/features"}
+  />
+</.modal>
