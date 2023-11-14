@@ -78,8 +78,8 @@ header nav .dropdown-menu[aria-expanded="false"] .dropdown {
 }
   
 
-header div.mobile {
-    
+header div.mobile[aria-hidden="true"] {
+    @apply hidden;
 }
 
 header div.mobile .icon-link .icon {
