@@ -62,20 +62,19 @@ defmodule SyntheticManagerWeb.CoreComponents do
   def icon_link(assigns) do
     ~H"""
     <div
-      class="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm leading-6 hover:bg-gray-50"
-      sclass="flex items-center justify-center gap-x-2.5 p-3 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-100"
+      class="icon-link group"
       {@rest}
 
       >
-      <div class="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white">
+      <div class="icon ">
         <%= render_slot(@icon) %>
       </div>
       <div class="flex-auto">
-        <a href={@path} class="block font-semibold text-gray-900">
-        <%= render_slot(@name) %>
+        <a href={@path} class="block font-semibold text-gray-900 relative">
+          <%= render_slot(@name) %>
           <span class="absolute inset-0"></span>
         </a>
-        <p :if={@tagline != []} class="mt-1 text-gray-600"><%= render_slot(@tagline) %></p>
+        <p :if={@tagline != []} class="tagline mt-1 text-gray-600"><%= render_slot(@tagline) %></p>
       </div>
     </div>
     """
@@ -115,7 +114,7 @@ defmodule SyntheticManagerWeb.CoreComponents do
     <div class={" dropdown-menu #{slugify(@label, "dropdown")}"} aria-expanded="false">
     <.dropdown_menu_toggle label={@label} />
     <div
-      phx-click-away={JS.set_attribute({"aria-expanded", "false"}, to: ".#{slugify(@label, "dropdown")}")}
+      phx-click-away={JS.set_attribute({"aria-expanded", "false"}, to: "nav .#{slugify(@label, "dropdown")}")}
       class="dropdown"
       >
       <%= render_slot(@section) %>
@@ -124,7 +123,7 @@ defmodule SyntheticManagerWeb.CoreComponents do
     """
   end
 
-  slot :link, required: false
+  slot :links, required: false
   def header_bar(assigns) do
     ~H"""
     <header class="bg-white">
@@ -138,14 +137,14 @@ defmodule SyntheticManagerWeb.CoreComponents do
 
 
         <div class="hidden lg:flex lg:gap-x-12">
-          <%= render_slot(@link) %>
+          <%= render_slot(@links) %>
         </div>
         <div class="hidden lg:flex lg:flex-1 lg:justify-end">
           <a href="#" class="text-sm font-semibold leading-6 text-gray-900">Log in <span aria-hidden="true">&rarr;</span></a>
         </div>
       </nav>
       <!-- Mobile menu, show/hide based on menu open state. -->
-      <div class="lg:hidden" role="dialog" aria-modal="true">
+      <div class="mobile lg:hidden" role="dialog" aria-modal="true">
         <!-- Background backdrop, show/hide based on slide-over state. -->
         <div class="fixed inset-0 z-10"></div>
         <div class="fixed inset-y-0 right-0 z-10 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
@@ -163,33 +162,8 @@ defmodule SyntheticManagerWeb.CoreComponents do
           </div>
           <div class="mt-6 flow-root">
             <div class="-my-6 divide-y divide-gray-500/10">
-              <div class="space-y-2 py-6">
-                <div class="-mx-3">
-                  <button type="button" class="flex w-full items-center justify-between rounded-lg py-2 pl-3 pr-3.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50" aria-controls="disclosure-1" aria-expanded="false">
-                    Product
-                    <!--
-                      Expand/collapse icon, toggle classes based on menu open state.
-
-                      Open: "rotate-180", Closed: ""
-                    -->
-                    <svg class="h-5 w-5 flex-none" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                      <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                    </svg>
-                  </button>
-                  <!-- 'Product' sub-menu, show/hide based on menu state. -->
-                  <div class="mt-2 space-y-2" id="disclosure-1">
-                    <a href="#" class="block rounded-lg py-2 pl-6 pr-3 text-sm font-semibold leading-7 text-gray-900 hover:bg-gray-50">Analytics</a>
-                    <a href="#" class="block rounded-lg py-2 pl-6 pr-3 text-sm font-semibold leading-7 text-gray-900 hover:bg-gray-50">Engagement</a>
-                    <a href="#" class="block rounded-lg py-2 pl-6 pr-3 text-sm font-semibold leading-7 text-gray-900 hover:bg-gray-50">Security</a>
-                    <a href="#" class="block rounded-lg py-2 pl-6 pr-3 text-sm font-semibold leading-7 text-gray-900 hover:bg-gray-50">Integrations</a>
-                    <a href="#" class="block rounded-lg py-2 pl-6 pr-3 text-sm font-semibold leading-7 text-gray-900 hover:bg-gray-50">Automations</a>
-                    <a href="#" class="block rounded-lg py-2 pl-6 pr-3 text-sm font-semibold leading-7 text-gray-900 hover:bg-gray-50">Watch demo</a>
-                    <a href="#" class="block rounded-lg py-2 pl-6 pr-3 text-sm font-semibold leading-7 text-gray-900 hover:bg-gray-50">Contact sales</a>
-                  </div>
-                </div>
-                <a href="#" class="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50">Features</a>
-                <a href="#" class="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50">Marketplace</a>
-                <a href="#" class="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50">Company</a>
+              <div class="space-y-2 py-6 flex flex-col">
+              <%= render_slot(@links) %>
               </div>
               <div class="py-6">
                 <a href="#" class="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50">Log in</a>
