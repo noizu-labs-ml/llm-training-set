@@ -19,6 +19,42 @@ defmodule SyntheticManagerWeb.CoreComponents do
   alias Phoenix.LiveView.JS
   import SyntheticManagerWeb.Gettext
 
+  attr :context, :map, default: %{}
+  slot :link, required: :false
+  def navgroup(assigns) do
+    ~H"""
+    <%= if @context[:top] do %>
+    a
+    <% else %>
+    b
+    <% end %>
+    """
+  end
+
+  attr :handle, :string, required: true
+  slot :label, required: true
+  slot :link, required: false
+  def submenu(assigns) do
+    ~H"""
+    <div class={"menu-#{@handle} submenu"} aria-expanded="false">
+      <button
+        phx-click={JS.toggle(to: ".menu-#{@handle} .dropdown")}
+        type="button" >
+            <%= render_slot(@label) %>
+            <svg class="h-5 w-5 flex-none text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+            </svg>
+      </button>
+      <div class="dropdown">
+        <div class="inner">
+        <%= render_slot(@link) %>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+
   attr :link, :string, default: "#"
   attr :name, :string, default: "#"
   attr :icon, :string, default: "#"
@@ -36,64 +72,92 @@ defmodule SyntheticManagerWeb.CoreComponents do
     """
   end
 
-  attr :context, :map, default: %{}
-  slot :inner_block, required: true
-  def nav_links(assigns) do
+  attr :rest, :global, doc: "the arbitrary HTML attributes to add to the flash container"
+  def navlinks(assigns) do
+    IO.inspect(assigns)
     ~H"""
-    <div :if={@context[:top]}> Hey <%= render_slot(@inner_block, yo: :apple) %> </div>
-    <div :if={!@context[:top]}> Bye <%= render_slot(@inner_block) %> </div>
+    LINKS
+    """
+  end
+
+
+  def burger_icon(assigns) do
+    ~H"""
+    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"></path>
+    </svg>
+    """
+  end
+
+  def close_icon(assigns) do
+    ~H"""
+    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+    </svg>
     """
   end
 
   slot :logo, required: true
-  slot :links, required: true
+  slot :link, required: false
+  slot :action, required: false
   def header_bar(assigns) do
     ~H"""
-    <header class="bg-white">
-        <nav class="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8" aria-label="Global">
-
-        <div class="header-logo flex lg:flex-1">
-          <%= render_slot(@logo) %>
-        </div>
-
-          <div class="flex lg:hidden">
-            <button type="button" class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700">
+    <header class="header bg-white">
+        <nav class="navbar mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8" aria-label="Global">
+          <div class="header-logo flex lg:flex-1">
+            <%= render_slot(@logo) %>
+          </div>
+          <div class="menu-toggle flex lg:hidden">
+            <.button phx-click={JS.set_attribute({"aria-hidden", "false"}, to: "#mobile-navbar")} class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700">
               <span class="sr-only">Open main menu</span>
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"></path>
-              </svg>
-            </button>
+              <.burger_icon />
+            </.button>
           </div>
-          <div class="hidden lg:flex lg:gap-x-12">
-            <div class="relative">
-              <%= render_slot(@links, %{top: true}) %>
-            </div>
+          <div class="menu-links hidden lg:flex lg:gap-x-12">
+
+              <%= for x <- @link do %>
+                <%= render_slot(x) %>
+              <% end %>
+
           </div>
-          <div class="hidden lg:flex lg:flex-1 lg:justify-end">
-            <a href="#" class="text-sm font-semibold leading-6 text-gray-900">
-              Log in <span aria-hidden="true">→</span>
-            </a>
+          <div class="menu-actions hidden lg:flex lg:flex-1 lg:justify-end">
+            <%= for x <- @action do %>
+              <%= render_slot(x) %>
+            <% end %>
           </div>
         </nav>
+
         <!-- Mobile menu, show/hide based on menu open state. -->
-        <div class="lg:hidden" role="dialog" aria-modal="true">
+        <div id="mobile-navbar" class="mobile navbar lg:hidden" role="dialog" aria-hidden="true" aria-modal="true">
           <!-- Background backdrop, show/hide based on slide-over state. -->
           <div class="fixed inset-0 z-10"></div>
-          <div class="fixed inset-y-0 right-0 z-10 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
+          <div
+            phx-click-away={JS.set_attribute({"aria-hidden", "true"}, to: "#mobile-navbar")}
+            class="fixed inset-y-0 right-0 z-10 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
             <div class="flex items-center justify-between">
               <%= render_slot(@logo) %>
-              <button type="button" class="-m-2.5 rounded-md p-2.5 text-gray-700">
+              <.button phx-click={JS.set_attribute({"aria-hidden", "true"}, to: "#mobile-navbar")} class="-m-2.5 rounded-md p-2.5 text-gray-700">
                 <span class="sr-only">Close menu</span>
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
+                <.close_icon />
+              </.button>
             </div>
+
             <div class="mt-6 flow-root">
-              <div class="-my-6 divide-y divide-gray-500/10">
-                <%= render_slot(@links, %{top: false}) %>
-              </div>
-            </div>
+        <div class="-my-6 divide-y divide-gray-500/10">
+          <div class="menu-links space-y-2 py-6 flex flex-col">
+            <%= for x <- @link do %>
+              <%= render_slot(x) %>
+            <% end %>
+          </div>
+          <div class="menu-actions py-6 flex flex-col">
+            <%= for x <- @action do %>
+              <%= render_slot(x) %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+
           </div>
         </div>
       </header>

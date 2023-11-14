@@ -2,7 +2,39 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+
+header nav.navbar .submenu  {
+    @apply inline-block relative;
+}
+
+
+header nav.navbar .submenu .dropdown  {
+    @apply absolute inset-x-0 top-10 z-10 bg-white pt-14 shadow-lg ring-1 ring-gray-900/5 w-80;
+}
+
+header nav.navbar .submenu .dropdown .inner {
+    @apply mx-auto grid max-w-7xl grid-cols-4 gap-x-4 px-6 py-10 lg:px-8 xl:gap-x-8 w-fit;
+}
+
+header nav.navbar .submenu button {
+    @apply flex items-center gap-x-1 text-sm font-semibold leading-6 text-gray-900 w-fit;
+}
+
 /* This file is for your main application CSS */
+header .navbar a.menu-link {
+    @apply text-sm font-semibold leading-6 text-gray-900;
+}
+
+header .mobile.navbar a.menu-link {
+    @apply text-sm font-semibold leading-6 text-red-900;
+}
+
+header .mobile.navbar[aria-hidden="true"] {
+    @apply hidden;
+}
+header .mobile.navbar[aria-hidden="false"] {
+    @apply visible;
+}
 
 nav .drop-down[aria-hidden="true"] {
     @apply opacity-0 translate-y-1;
