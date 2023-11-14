@@ -3,6 +3,19 @@ defmodule SyntheticManagerWeb.FeatureLive.FormComponent do
 
   alias SyntheticManager.Features
 
+
+  def category_options() do
+    [
+      basic_syntax: "basic_syntax",
+      code_block: "code_block",
+      prompt_prefix: "prompt_prefix",
+      directive: "directive",
+      agent: "agent",
+      runtime_flag: "runtime_flag",
+      other:  "other",
+
+    ]
+  end
   @impl true
   def render(assigns) do
     ~H"""
@@ -20,6 +33,7 @@ defmodule SyntheticManagerWeb.FeatureLive.FormComponent do
         phx-submit="save"
       >
         <.input field={@form[:name]} type="text" label="Name" />
+        <.input field={@form[:category]} options={category_options()} type="select" label="Category" />
         <.input field={@form[:description]} type="text" label="Description" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Feature</.button>

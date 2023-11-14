@@ -62,7 +62,7 @@ header nav .dropdown {
 }
 
 header nav .dropdown-menu[aria-expanded="false"] .dropdown {
-    @apply opacity-0 translate-y-1;            
+    @apply opacity-0 translate-y-1 hidden;
 }
 
 header nav .dropdown-menu[aria-expanded="true"] .dropdown {
@@ -95,7 +95,7 @@ header div.mobile .dropdown .icon-link {
 }
 
 header div.mobile .dropdown-menu[aria-expanded="false"] .dropdown {
-    @apply hidden;            
+    @apply hidden;
 }
 
 header div.mobile .dropdown-menu[aria-expanded="true"] .dropdown {

@@ -25,11 +25,16 @@ defmodule SyntheticManagerWeb.Router do
     live "/features/:id", FeatureLive.Show, :show
     live "/features/:id/show/edit", FeatureLive.Show, :edit
 
-    live "/synthetic-groups", SyntheticGroupLive.Index, :index
-    live "/synthetic-groups/new", SyntheticGroupLive.Index, :new
-    live "/synthetic-groups/:id/edit", SyntheticGroupLive.Index, :edit
-    live "/synthetic-groups/:id", SyntheticGroupLive.Show, :show
-    live "/synthetic-groups/:id/show/edit", SyntheticGroupLive.Show, :edit
+    live "/synthetics/interactive", SyntheticLive.Interactive, :index
+    live "/synthetics/upload", SyntheticLive.Upload, :index
+
+    live "/synthetics", SyntheticLive.Index, :index
+    live "/synthetics/new", SyntheticLive.Index, :new
+    live "/synthetics/:id/edit", SyntheticLive.Index, :edit
+    live "/synthetics/:id", SyntheticLive.Show, :show
+    live "/synthetics/:id/show/edit", SyntheticLive.Show, :edit
+
+
   end
 
   # Other scopes may use custom stacks.

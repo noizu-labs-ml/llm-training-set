@@ -1,0 +1,48 @@
+<.header>
+Listing Synthetics
+<:actions>
+    <.link patch={~p"/synthetics/new"}>
+        <.button>New</.button>
+    </.link>
+</:actions>
+</.header>
+
+<.table
+id="synthetics"
+rows={@streams.synthetics}
+row_click={fn {_id, synthetic} -> JS.navigate(~p"/synthetics/#{synthetic}") end}
+>
+<:col :let={{_id, synthetic}} label="Name"><%= synthetic.name %></:col>
+<:col :let={{_id, synthetic}} label="Description"><%= synthetic.description %></:col>
+<:action :let={{_id, synthetic}}>
+    <div class="sr-only">
+        <.link navigate={~p"/synthetics/#{synthetic}"}>Show</.link>
+    </div>
+    <.link patch={~p"/synthetics/#{synthetic}/edit"}>Edit</.link>
+</:action>
+<:action :let={{id, synthetic}}>
+    <.link
+    phx-click={JS.push("delete", value: %{id: synthetic.id}) |> hide("##{id}")}
+    data-confirm="Are you sure?"
+    >
+    Delete
+</.link>
+</:action>
+</.table>
+
+<.modal
+:if={@live_action in [:new, :edit]}
+id="synthetic-modal"
+show
+on_cancel={JS.patch(~p"/synthetics")}
+>
+<.live_component
+    module={SyntheticManagerWeb.SyntheticLive.FormComponent}
+    id={@synthetic.id || :new}
+    title={@page_title}
+    action={@live_action}
+    synthetic={@synthetic}
+    feature_options={@feature_options}
+    patch={~p"/synthetics"}
+/>
+</.modal>
