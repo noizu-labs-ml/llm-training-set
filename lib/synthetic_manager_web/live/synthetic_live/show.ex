@@ -6,27 +6,19 @@ defmodule SyntheticManagerWeb.SyntheticLive.Show do
 
   @impl true
   def mount(_params, _session, socket) do
-    feature_options = Features.list_features()
-                      |> Enum.map(& [key: &1.name, value: "#{&1.id}"])
-
     socket = socket
-             |> assign(:feature_options, feature_options)
-
+             |> assign(:features, Features.list_features())
     {:ok, socket}
   end
 
   @impl true
   def handle_params(%{"id" => id}, _, socket) do
     synthetic = Synthetics.get_synthetic!(id, :hydrate)
-    feature_options = Features.list_features()
-                      |> Enum.map(& [key: &1.name, value: "#{&1.id}"])
-
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
      |> assign(:synthetic, synthetic)
-     |> assign(:feature_options, feature_options)
-
+     |> assign(:features, Features.list_features())
     }
   end
 

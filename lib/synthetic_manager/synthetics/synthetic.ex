@@ -11,17 +11,29 @@ defmodule SyntheticManager.Synthetics.Synthetic do
                  join_through: SyntheticManager.Synthetics.SyntheticFeature,
                  join_keys: [synthetic_id: :id, feature_id: :id],
                  on_replace: :delete
-    field :details, :map, default: %{messages: []}
+    embeds_many :messages, Message, on_replace: :delete do
+      field :role, :string
+      field :content, :string
+      field :note, :string
+      field :sequence, :integer
+    end
+    #field :my_jsonb_field, {:array, SyntheticManager.Synthetics.Synthetic.Message}, default: [], use: :jsonb
     field :created_by, :string
-    field :feature_list, :string, virtual: true
     timestamps(type: :utc_datetime_usec)
   end
+
 
   @doc false
   def changeset(feature, attrs) do
     feature
-    |> cast(attrs, [:name, :description, :hidden_prompt, :details, :created_by])
+    |> cast(attrs, [:name, :description, :hidden_prompt, :created_by])
     |> cast_assoc(:features)
-    |> validate_required([:name, :description, :hidden_prompt, :details, :created_by])
+    |> cast_embed(:messages, with: &message_changeset/2)
+    |> validate_required([:name, :description, :hidden_prompt, :created_by])
+  end
+
+  def message_changeset(embedded_item, attrs) do
+    embedded_item
+    |> cast(attrs, [:id, :sequence, :role, :content, :note])
   end
 end

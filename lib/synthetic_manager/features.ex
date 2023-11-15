@@ -89,12 +89,6 @@ defmodule SyntheticManager.Features do
     Repo.delete(feature)
   end
 
-  def feature_options() do
-    list_features()
-    |> Enum.map(& [key: &1.name, value: &1.id, category: &1.category])
-    |> Enum.group_by(& &1[:category])
-  end
-
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking feature changes.
 

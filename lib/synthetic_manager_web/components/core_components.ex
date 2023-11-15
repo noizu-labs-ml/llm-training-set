@@ -447,7 +447,7 @@ defmodule SyntheticManagerWeb.CoreComponents do
   attr :prompt, :string, default: nil, doc: "the prompt for select inputs"
   attr :options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2"
   attr :multiple, :boolean, default: false, doc: "the multiple flag for select inputs"
-
+  attr :class, :string, default: ""
   attr :rest, :global,
     include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
                 multiple pattern placeholder readonly required rows size step)
@@ -479,7 +479,7 @@ defmodule SyntheticManagerWeb.CoreComponents do
           name={@name}
           value="true"
           checked={@checked}
-          class="rounded border-zinc-300 text-zinc-900 focus:ring-0"
+          class={["rounded border-zinc-300 text-zinc-900 focus:ring-0", @class]}
           {@rest}
         />
         <%= @label %>
@@ -496,7 +496,7 @@ defmodule SyntheticManagerWeb.CoreComponents do
       <select
         id={@id}
         name={@name}
-        class="mt-2 block w-full rounded-md border border-gray-300 bg-white shadow-sm focus:border-zinc-400 focus:ring-0 sm:text-sm"
+        class={["mt-2 block w-full rounded-md border border-gray-300 bg-white shadow-sm focus:border-zinc-400 focus:ring-0 sm:text-sm",@class]}
         multiple={@multiple}
         {@rest}
       >

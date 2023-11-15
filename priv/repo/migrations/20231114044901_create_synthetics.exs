@@ -8,7 +8,7 @@ defmodule SyntheticManager.Repo.Migrations.CreateSynthetics do
       add :name, :string, length: 256
       add :description, :text
       add :hidden_prompt, :text
-      add :details, :jsonb
+      add :messages, :jsonb
       add :created_by, :string, length: 64
       timestamps(type: :utc_datetime_usec)
     end

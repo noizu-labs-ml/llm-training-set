@@ -20,90 +20,146 @@ defmodule SyntheticManagerWeb.SyntheticLive.FormComponent do
         phx-target={@myself}
         phx-change="validate"
         phx-submit="save"
+
       >
-        <.input field={@form[:name]} type="text" label="Name" />
-        <.input field={@form[:created_by]} type="text" label="Created By" />
+
+          <div class="bg-slate-100 shadow-slate-800 shadow-sm p-2 width-full">
+            <.input field={@form[:name]} type="text" label="Name" />
+            <.input field={@form[:created_by]} type="text" label="Created By" />
+          </div>
 
 
-        <.input field={@form[:feature_list]} type="select" options={@feature_options} multiple={true} label="Features" />
-        <.input field={@form[:description]} type="text" label="Description" />
+          <div class="bg-slate-100 shadow-slate-800 shadow-sm p-2 width-full">
+            <.input class="h-60" field={@form[:features]} type="select" options={feature_options(@features)} multiple={true} label="Features" />
+          </div>
 
-        <.input field={@form[:hidden_prompt]} type="textarea" label="Hidden Prompt" />
+          <div class="bg-slate-100 shadow-slate-800 shadow-sm p-2 width-full">
+            <.input field={@form[:description]} type="text" label="Description" />
+          </div>
 
-        [ Messages}
+          <div class="bg-slate-100 shadow-slate-800 shadow-sm p-2 width-full">
+            <.input field={@form[:hidden_prompt]} type="textarea" label="Hidden Prompt" />
+          </div>
 
-        <:actions>
-          <.button phx-disable-with="Saving...">Save Synthetic</.button>
-        </:actions>
+          <h1> Messages </h1>
+          <div class="bg-slate-100 shadow-slate-800 shadow-sm p-2 width-full">
+
+         <.inputs_for :let={f_nested}  field={@form[:messages]}>
+            <.input type="text" field={f_nested[:role]} />
+            <.input type="text" field={f_nested[:content]} />
+            <.input type="text" field={f_nested[:note]} />
+          </.inputs_for>
+
+          <.input type="checkbox" name="add-button" />
+
+      </div>
+
+
+          <:actions>
+            <.button phx-disable-with="Saving...">Save Synthetic</.button>
+          </:actions>
+
+
       </.simple_form>
     </div>
     """
   end
 
+  defp feature_options(features) do
+    Enum.map(features, & [key: "#{&1.name} - #{&1.description}", value: &1.id, category: &1.category])
+    |> Enum.group_by(& &1[:category])
+  end
+
+
   @impl true
   def update(%{synthetic: synthetic} = assigns, socket) do
-    IO.puts "UPDATE"
-    features = synthetic.features
-               |> Enum.map(& &1.id)
-    params = %{features: features}
-    IO.inspect(synthetic, label: "SYNTHETIC")
-    changeset = Synthetics.change_synthetic(synthetic, params)
-                |> IO.inspect(label: "UDPATE CHANGESET")
+    changeset = Synthetics.change_synthetic(synthetic)
+                |> IO.inspect(label: "1 UPDATE CHANGESET")
     {:ok,
      socket
      |> assign(assigns)
-     |> assign_form(changeset)}
+     |> assign_form(changeset)
+    }
   end
 
-  @impl true
-  def handle_event("validate", %{"synthetic" => synthetic_params}, socket) do
-    features = synthetic_params["feature_list"]
-               |> Enum.map(&String.to_integer/1)
 
-    tweak = Map.put(synthetic_params, "features", features)
+
+  @impl true
+  def handle_event("validate", %{"_target" => ["add-button"], "synthetic" => synthetic_params}, socket) do
+    messages = Enum.map(synthetic_params[:messages] || synthetic_params["messages"] || [],
+      fn
+        ({_,v}) -> %{ role: v["role"], note: v["note"], content: v["content"], sequence: v["sequence"]}
+        v = %{} -> v
+      end) |> IO.inspect("CALLED VALIDATE ####################")
+    synthetic_params = Map.put(synthetic_params, "messages", messages ++ [%{sequence: :os.system_time(:second), role: "user", content: "", note: ""}])
+
     changeset =
       socket.assigns.synthetic
-      |> Synthetics.change_synthetic(tweak)
-      |> put_in([Access.key(:data), Access.key(:feature_list)], synthetic_params["feature_list"] || [])
+      |> Synthetics.change_synthetic(synthetic_params)
+      |> Map.put(:action, :append)
+      |> tap(& Map.from_struct(&1) |> IO.inspect)
       |> Map.put(:action, :validate)
+    {:noreply, assign_form(socket, changeset)}
+  end
+  def handle_event("validate", %{"synthetic" => synthetic_params}, socket) do
 
-    IO.inspect changeset, label: "VALIDATE"
-#      |> update_in([Access.key(:data), Access.key(:features)], fn(x) ->
-#          Enum.map(x, & "#{&1.id}")
-#      end)
-#
-#      changeset.data |> IO.inspect(label: "AFTER CHANGE!!!!!!!!!!!!!!")
 
+    messages = Enum.map(synthetic_params[:messages] || synthetic_params["messages"] || [],
+      fn
+        ({_,v}) -> %{ role: v["role"], note: v["note"], content: v["content"], sequence: v["sequence"]}
+        v = %{} -> v
+      end) |> IO.inspect("CALLED VALIDATE ####################")
+    synthetic_params = Map.put(synthetic_params, "messages", messages)
+
+    changeset =
+      socket.assigns.synthetic
+      |> Synthetics.change_synthetic(synthetic_params)
+      |> Map.put(:action, :validate)
     {:noreply, assign_form(socket, changeset)}
   end
 
+
   def handle_event("save", %{"synthetic" => synthetic_params}, socket) do
-    IO.puts "SAVE"
+    messages = Enum.map(synthetic_params["messages"] || [],
+      fn
+        ({_,v}) -> %{ role: v["role"], note: v["note"], content: v["content"], sequence: v["sequence"]}
+        v = %{} -> v
+      end)
+    synthetic_params = Map.put(synthetic_params, "messages", messages)
+
     save_synthetic(socket, socket.assigns.action, synthetic_params)
   end
 
   defp save_synthetic(socket, :edit, synthetic_params) do
-    IO.inspect(synthetic_params, label: "SAVE !")
-    features = synthetic_params["feature_list"]
-               |> Enum.map(&String.to_integer/1)
+    messages = Enum.map(synthetic_params["messages"] || [],
+      fn
+        ({_,v}) -> %{ role: v["role"], note: v["note"], content: v["content"], sequence: v["sequence"]}
+        v = %{} -> v
+      end)
+    synthetic_params = Map.put(synthetic_params, "messages", messages)
 
-    tweak = Map.put(synthetic_params, "features", features)
-    case Synthetics.update_synthetic(socket.assigns.synthetic, tweak) do
+    case Synthetics.update_synthetic(socket.assigns.synthetic, synthetic_params) do
       {:ok, synthetic} ->
         notify_parent({:saved, synthetic})
-
         {:noreply,
          socket
          |> put_flash(:info, "Synthetic updated successfully")
          |> push_patch(to: socket.assigns.patch)}
-
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
     end
   end
 
   defp save_synthetic(socket, :new, synthetic_params) do
-    case Synthetics.create_synthetic(synthetic_params) |> IO.inspect() do
+
+    messages = Enum.map(synthetic_params["messages"] || [],
+      fn
+        ({_,v}) -> %{ role: v["role"], note: v["note"], content: v["content"], sequence: v["sequence"]}
+        v = %{} -> v
+      end)
+    synthetic_params = Map.put(synthetic_params, "messages", messages)
+
+    case Synthetics.create_synthetic(synthetic_params) |> IO.inspect(label: "SAVE?") do
       {:ok, synthetic} ->
         notify_parent({:saved, synthetic})
 
@@ -118,11 +174,10 @@ defmodule SyntheticManagerWeb.SyntheticLive.FormComponent do
   end
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
-    features = Enum.map(changeset.data.features, & "#{&1.id}")
     form = changeset
-           |> put_in([Access.key(:data), Access.key(:feature_list)], features)
            |> to_form()
-           |> IO.inspect(label: "ASSIGN")
+
+    IO.inspect(form.data, label: "---------------------------")
     socket
     |> assign(:form, form)
   end
