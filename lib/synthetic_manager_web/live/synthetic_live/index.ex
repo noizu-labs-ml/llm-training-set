@@ -36,7 +36,7 @@ defmodule SyntheticManagerWeb.SyntheticLive.Index do
 
     socket
     |> assign(:page_title, "New Synthetic")
-    |> assign(:synthetic, %Synthetic{})
+    |> assign(:synthetic, %Synthetic{features: [], feature_list: []})
     |> assign(:feature_options, feature_options)
   end
 

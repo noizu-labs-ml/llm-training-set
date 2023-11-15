@@ -1,6 +1,5 @@
 defmodule SyntheticManagerWeb.FeatureLive.Index do
   use SyntheticManagerWeb, :live_view
-
   alias SyntheticManager.Features
   alias SyntheticManager.Features.Feature
 
