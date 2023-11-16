@@ -10,7 +10,8 @@ defmodule SyntheticManager.Repo.Migrations.FeatureCategoryEnum do
       'directive',
       'agent',
       'runtime_flag',
-      'other'
+      'other',
+      'unknown'
     )"
   end
 

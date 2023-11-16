@@ -1,1 +1,13 @@
-Upload
+
+
+<h1>Upload Yaml Changesets</h1>
+<form phx-submit="synthetics:upload">
+    <textarea name="upload"  rows="20" class="w-full h-full" multiple="true" >
+    <%= @raw %>
+    </textarea>
+    <button type="submit" class="bg-black rounded text-sm font-semibold leading-6 text-white active:text-white/80">Next.</button>
+</form>
+
+<pre :if={assigns[:json]}>
+    <%= inspect assigns[:json], pretty: true %>
+</pre>

@@ -28,7 +28,7 @@ defmodule SyntheticManagerWeb.SyntheticLive.Index do
   defp apply_action(socket, :new, _params) do
     socket
     |> assign(:page_title, "New Synthetic")
-    |> assign(:synthetic, %Synthetic{features: [], messages: []})
+    |> assign(:synthetic, %Synthetic{} |> Synthetics.preload_synthetic(:all))
     |> assign(:features, Features.list_features())
   end
 

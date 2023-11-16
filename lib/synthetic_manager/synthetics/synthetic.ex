@@ -2,38 +2,55 @@ defmodule SyntheticManager.Synthetics.Synthetic do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "synthetic" do
+    # Standard Fields
     field :name, :string
     field :description, :string
     field :hidden_prompt, :string
-    many_to_many :features,
-                 SyntheticManager.Features.Feature,
+    field :functions, :string
+    field :status, Ecto.Enum, values: SyntheticManager.EntityStatusEnum.values()
+    field :meta, :map, default: %{}
+
+    # Belongs To
+    belongs_to :user, SyntheticManager.Users.User, type: Ecto.UUID
+    belongs_to :organization, SyntheticManager.Organizations.Organization, type: Ecto.UUID
+
+    # Many To Many
+    many_to_many :features, SyntheticManager.Features.Feature,
                  join_through: SyntheticManager.Synthetics.SyntheticFeature,
                  join_keys: [synthetic_id: :id, feature_id: :id],
                  on_replace: :delete
+
+    # Embeds
     embeds_many :messages, Message, on_replace: :delete do
-      field :role, :string
+      field :features, {:array, :map}
+      field :role, Ecto.Enum, values: [:user, :assistant, :system, :function_call, :function_response]
       field :content, :string
       field :note, :string
+      field :status, Ecto.Enum, values: SyntheticManager.EntityStatusEnum.values(), default: :pending
       field :sequence, :integer
+      timestamps(type: :utc_datetime_usec, null: true)
     end
-    #field :my_jsonb_field, {:array, SyntheticManager.Synthetics.Synthetic.Message}, default: [], use: :jsonb
-    field :created_by, :string
-    timestamps(type: :utc_datetime_usec)
-  end
 
+
+    # Time Stamps
+    timestamps(type: :utc_datetime_usec, null: true)
+  end
 
   @doc false
   def changeset(feature, attrs) do
     feature
-    |> cast(attrs, [:name, :description, :hidden_prompt, :created_by])
+    |> cast(attrs, [:name, :description, :hidden_prompt, :functions, :user_id, :organization_id, :status, :meta])
     |> cast_assoc(:features)
+    |> cast_assoc(:user)
+    |> cast_assoc(:organization)
     |> cast_embed(:messages, with: &message_changeset/2)
-    |> validate_required([:name, :description, :hidden_prompt, :created_by])
+    |> validate_required([:name])
   end
 
   def message_changeset(embedded_item, attrs) do
     embedded_item
-    |> cast(attrs, [:id, :sequence, :role, :content, :note])
+    |> cast(attrs, [:id, :features, :status, :role, :content, :note, :sequence])
   end
 end

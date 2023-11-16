@@ -23,6 +23,11 @@ defmodule SyntheticManager.Synthetics do
     from(e in Synthetic, preload: [:features]) |> Repo.all()
   end
 
+
+  def preload_synthetic(c, :all) do
+    c |> Repo.preload([:features, :user, :organization])
+  end
+
   @doc """
   Gets a single synthetic.
 
@@ -41,7 +46,7 @@ defmodule SyntheticManager.Synthetics do
 
   def get_synthetic!(id, :hydrate) do
     Repo.get!(Synthetic, id)
-    |> Repo.preload([:features])
+    |> preload_synthetic(:all)
   end
   @doc """
   Creates a synthetic.
@@ -56,30 +61,58 @@ defmodule SyntheticManager.Synthetics do
 
   """
   def create_synthetic(attrs \\ %{}) do
-
-    t = Map.delete(attrs, "features")
-        |> Map.delete(:features)
-        |> Map.delete("messages")
-        |> Map.delete(:messages)
-
-    messages = Enum.map(
-      attrs[:messages] || attrs["messages"] || [],
-      & %Synthetic.Message{
-        id: &1["id"] || &1[:id],
-        role: &1["role"] || &1[:role],
-        note: &1["note"] || &1[:note],
-        content: &1["content"] || &1[:content],
-        sequence: (&1["sequence"] || &1[:sequence] || 0),
-      } )
-
+    t = Map.drop(attrs, [:user, "user", :features, "features", :messages, "messages"])
     %Synthetic{}
     |> Synthetic.changeset(t)
-    |> Ecto.Changeset.put_assoc(:features, fetch_features(attrs[:features] || attrs["features"] || []))
-    |> Ecto.Changeset.put_embed(:messages, messages)
-    |> tap(& &1.data |> IO.inspect(label: :create))
+    |> embed_features(attrs)
+    |> embed_messages(attrs)
     |> Repo.insert()
-    |> IO.inspect(label: :create)
   end
+
+  def embed_messages(change_set, attrs) do
+    if messages = (attrs[:messages] || attrs["messages"]) do
+      messages = messages
+                 |> Enum.map(
+                      fn
+                        ({_,v}) -> %{ role: v["role"], note: v["note"], content: v["content"], sequence: v["sequence"]}
+                        v = %{} -> v
+                      end)
+      change_set
+      |> Ecto.Changeset.put_embed(:messages, messages)
+    else
+      change_set
+    end
+  end
+
+  def embed_features(change_set, attrs) do
+
+
+
+    change_set2 = if uid = (attrs[:user] || attrs["user"]) do
+      #uid = UUID.binary_to_string!(uid)
+      user = SyntheticManager.Users.get_user!(uid) |> IO.inspect(label: "EMBED----------------")
+      change_set
+      |> Ecto.Changeset.put_assoc(:user, user) |> IO.inspect
+    else
+      change_set
+    end
+
+
+    if features = (attrs[:features] || attrs["features"]) do
+      features = Enum.map(features,
+        fn x when is_bitstring(x) -> String.to_integer(x)
+          %{identifier: x} -> x
+          x when is_integer(x) -> x
+        end
+      )
+      features |> IO.inspect(label: "FEATURE EMBED----------------")
+      change_set2
+      |> Ecto.Changeset.put_assoc(:features, features)
+    else
+      change_set2
+    end
+  end
+
 
   def fetch_features(ids) do
     ids = Enum.map(ids,
@@ -104,30 +137,12 @@ defmodule SyntheticManager.Synthetics do
 
   """
   def update_synthetic(%Synthetic{} = synthetic, attrs) do
-
-    t = Map.delete(attrs, "features")
-        |> Map.delete(:features)
-        |> Map.delete("messages")
-        |> Map.delete(:messages)
-
-    messages = Enum.map(
-      attrs[:messages] || attrs["messages"] || [],
-      & %Synthetic.Message{
-        id: &1["id"] || &1[:id],
-        role: &1["role"] || &1[:role],
-        note: &1["note"] || &1[:note],
-        content: &1["content"] || &1[:content],
-        sequence: (&1["sequence"] || &1[:sequence] || 0),
-      } )
-
-
+    t = Map.drop(attrs, [:user, "user", :features, "features", :messages, "messages"])
     synthetic
     |> Synthetic.changeset(t)
-    |> Ecto.Changeset.put_assoc(:features, fetch_features(attrs[:features] || attrs["features"] || []))
-    |> Ecto.Changeset.put_embed(:messages, messages)
-    |> tap(& &1.data |> IO.inspect(label: :create))
+    |> embed_features(attrs)
+    |> embed_messages(attrs)
     |> Repo.update()
-    |> IO.inspect(label: "UPDATE OUTCOME")
   end
 
   @doc """
@@ -156,32 +171,10 @@ defmodule SyntheticManager.Synthetics do
 
   """
   def change_synthetic(%Synthetic{} = synthetic, attrs \\ %{}) do
-    t = Map.delete(attrs, "features")
-        |> Map.delete(:features)
-        |> Map.delete("messages")
-        |> Map.delete(:messages)
-
-    messages = Enum.map(
-      attrs[:messages] || attrs["messages"] || [],
-      & %Synthetic.Message{
-        id: &1["id"] || &1[:id],
-        role: &1["role"] || &1[:role],
-        note: &1["note"] || &1[:note],
-        content: &1["content"] || &1[:content],
-        sequence: (&1["sequence"] || &1[:sequence] || 0),
-      } )
-
-
-    if attrs["messages"] || attrs[:message] do
-      Synthetic.changeset(synthetic, t)
-      |> Ecto.Changeset.put_assoc(:features, fetch_features(attrs[:features] || attrs["features"] || []))
-      |> Ecto.Changeset.put_embed(:messages, messages)
-      else
-      Synthetic.changeset(synthetic, t)
-      |> Ecto.Changeset.put_assoc(:features, fetch_features(attrs[:features] || attrs["features"] || []))
-
-    end
-
-    #|> cast_embed(:messages, with: &message_changeset/2)
+    t = Map.drop(attrs, [:user, "user", :features, "features", :messages, "messages"])
+    synthetic
+    |> Synthetic.changeset(t)
+    |> embed_features(attrs)
+    |> embed_messages(attrs)
   end
 end

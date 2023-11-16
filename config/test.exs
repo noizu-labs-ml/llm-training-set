@@ -18,7 +18,8 @@ config :synthetic_manager, SyntheticManager.Repo,
 config :synthetic_manager, SyntheticManagerWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   secret_key_base: "M7DPSUZU1ED7wBd+pA3yAJG5nBt7gJ88i54RHprK+nHpH2oXilZBbgn1zwDlwcjr",
-  server: false
+  server: false,
+  migration_primary_key: [name: :id, type: :uuid]
 
 # In test we don't send emails.
 config :synthetic_manager, SyntheticManager.Mailer, adapter: Swoosh.Adapters.Test

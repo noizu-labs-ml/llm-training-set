@@ -50,7 +50,11 @@ defmodule SyntheticManager.MixProject do
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
-      {:plug_cowboy, "~> 2.5"}
+      {:plug_cowboy, "~> 2.5"},
+      {:ymlr, "~> 4.0"},
+      {:yaml_elixir, "~> 2.9.0"},
+      {:fast_yaml, "~> 1.0.36"},
+      {:elixir_uuid, "~> 1.2"},
     ]
   end
 

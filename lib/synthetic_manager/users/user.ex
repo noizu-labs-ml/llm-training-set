@@ -1,31 +1,32 @@
-defmodule SyntheticManager.Features.Feature do
+defmodule SyntheticManager.Users.User do
   use Ecto.Schema
   import Ecto.Changeset
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
-  schema "feature" do
+  schema "user" do
     # Standard Fields
     field :name, :string
-    field :category, Ecto.Enum, values: SyntheticManager.FeatureCategoryEnum.values()
-    field :description, :string
+    field :bio, :string
     field :status, Ecto.Enum, values: SyntheticManager.EntityStatusEnum.values()
     field :meta, :map, default: %{}
 
-    # # Time Stamps
-    timestamps(type: :utc_datetime_usec, null: true)
+    field :email, :string
+    field :pass, :string
+
+    # Time Stamps
+    timestamps(type: :utc_datetime_usec)
   end
 
   @doc false
-  def changeset(feature, attrs) do
-    feature
-    |> cast(attrs, [:name, :category, :description, :status, :meta])
-    |> validate_required([:name, :category])
+  def changeset(user, attrs) do
+    user
+    |> cast(attrs, [:name, :bio, :status, :meta])
+    |> validate_required([:name])
   end
-
 
   defimpl Phoenix.HTML.Safe do
     def to_iodata(x) do
-      "#{x.id}"
+      UUID.binary_to_string!(x.id)
       #  "#{Phoenix.HTML.Engine.html_escape(feature.name)} - #{Phoenix.HTML.Engine.html_escape(feature.description)}" |> IO.iodata_to_binary()
     end
   end
