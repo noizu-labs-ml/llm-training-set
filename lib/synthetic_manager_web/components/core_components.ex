@@ -500,6 +500,7 @@ defmodule SyntheticManagerWeb.CoreComponents do
         multiple={@multiple}
         {@rest}
       >
+        <% IO.inspect assigns.id %>
         <option :if={@prompt} value=""><%= @prompt %></option>
         <%= Phoenix.HTML.Form.options_for_select(@options, @value) %>
       </select>
@@ -891,7 +892,7 @@ defmodule SyntheticManagerWeb.CoreComponents do
         <select name={@field.name} id={@field.id}
                 class="block w-full pl-3 pr-10 py-1.5 text-base rounded-md bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm cursor-default">
           <%= for user <- @users do %>
-            <.custom_option user={user} selected={user.id == (@field.value && @field.value.id )} />
+            <.custom_option user={user} selected={false} />
           <% end %>
         </select>
         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
@@ -905,60 +906,5 @@ defmodule SyntheticManagerWeb.CoreComponents do
 
 
 
-  attr :target, :any, required: true
-  attr :form, :any, required: true
-  attr :field, Phoenix.HTML.FormField, required: true
-  #attr :field, :string, required: true
-  attr :users, :list, required: true
-  #attr :selected_user, :map, required: false
-  def pretty_user_selector2(assigns) do
-    ~H"""
-
-    <div >
-      <% IO.inspect(@field.value) %>
-      <label for="user_selector" class="block text-sm font-medium leading-6 text-gray-900">Select User</label>
-      <div class="mt-1 relative">
-        <%= if @field.value do %>
-        <button type="button" class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6">
-          <span class="flex items-center">
-            <img src="https://images.unsplash.com/photo-1491528323818-fdd1faba62cc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
-            <span class="ml-3 block truncate"><%= @field.value.data.name %></span>
-          </span>
-          <span class="ml-3 block truncate"> @field.value.additional_info </span>
-          <span class="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
-            <!-- Icon -->
-          </span>
-        </button>
-        <% else %>
-        <button type="button" class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6">
-          <span class="flex items-center">
-           Select User
-          </span>
-          <span class="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
-            <!-- Icon -->
-          </span>
-        </button>
-        <% end %>
-        <!-- Dropdown items -->
-        <ul class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm" tabindex="-1">
-          <%= for user <- @users do %>
-            <li class="text-gray-900 cursor-default select-none py-2 pl-3 pr-9 hover:bg-indigo-600 hover:text-white"
-    phx-click="select_user"
-    phx-value-user-id={user.id}
-    phx-value-synthetics={@form.source.data}
-    phx-target={@target}
-    role="option">
-              <div class="flex items-center">
-                <img src={"https://images.unsplash.com/photo-1491528323818-fdd1faba62cc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"} alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
-                <span class="font-normal ml-3 block truncate"><%= user.name %></span>
-              </div>
-              <span class="absolute inset-y-0 right-0 flex items-center pr-4">user.additional_info</span>
-            </li>
-          <% end %>
-        </ul>
-      </div>
-    </div>
-    """
-  end
 
 end

@@ -20,15 +20,14 @@ defmodule SyntheticManagerWeb.SyntheticLive.Index do
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Synthetic")
-    |> assign(:synthetic, Synthetics.get_synthetic!(id, :hydrate)
-    |> IO.inspect(label: "HERE"))
+    |> assign(:synthetic, Synthetics.get_synthetic!(id, :hydrate))
     |> assign(:features, Features.list_features())
   end
 
   defp apply_action(socket, :new, _params) do
     socket
     |> assign(:page_title, "New Synthetic")
-    |> assign(:synthetic, %Synthetic{} |> Synthetics.preload_synthetic(:all))
+    |> assign(:synthetic, %Synthetic{features: nil})
     |> assign(:features, Features.list_features())
   end
 

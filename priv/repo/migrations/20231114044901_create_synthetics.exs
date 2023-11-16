@@ -16,7 +16,7 @@ defmodule SyntheticManager.Repo.Migrations.CreateSynthetics do
       timestamps(type: :utc_datetime_usec, null: true)
     end
 
-    create table(:synthetic_feature, primary_key: [type: :bigint]) do
+    create table(:synthetic_feature) do
       add :feature_id, references(:feature, on_delete: :delete_all)
       add :synthetic_id, references(:synthetic, on_delete: :delete_all)
       add :status, SyntheticManager.EntityStatusEnum.type, null: false, default: "pending", comment: "Active, Pending, Disabled, Review"
@@ -43,7 +43,7 @@ defmodule SyntheticManager.Repo.Migrations.CreateSynthetics do
     end
 
 
-    create table(:example_set_suite_example_set, primary_key: [type: :bigint]) do
+    create table(:example_set_suite_example_set) do
       add :example_suite_id, references(:example_set_suite, on_delete: :delete_all)
       add :example_set_id, references(:example_set, on_delete: :delete_all)
       add :name, :string, length: 256
@@ -53,7 +53,7 @@ defmodule SyntheticManager.Repo.Migrations.CreateSynthetics do
       timestamps(type: :utc_datetime_usec, null: true)
     end
 
-    create table(:example_set_synthetic, primary_key: [type: :bigint]) do
+    create table(:example_set_synthetic) do
       add :synthetic_id, references(:synthetic, on_delete: :delete_all)
       add :example_set_id, references(:example_set_suite, on_delete: :delete_all)
 

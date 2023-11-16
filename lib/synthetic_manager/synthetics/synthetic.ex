@@ -40,16 +40,18 @@ defmodule SyntheticManager.Synthetics.Synthetic do
 
   @doc false
   def changeset(feature, attrs) do
+    IO.inspect(attrs,label: "CHANGESET-1")
     feature
     |> cast(attrs, [:name, :description, :hidden_prompt, :functions, :user_id, :organization_id, :status, :meta])
+    |> validate_required([:name])
     |> cast_assoc(:features)
     |> cast_assoc(:user)
     |> cast_assoc(:organization)
     |> cast_embed(:messages, with: &message_changeset/2)
-    |> validate_required([:name])
   end
 
   def message_changeset(embedded_item, attrs) do
+    IO.inspect(attrs,label: "CHANGESET-2")
     embedded_item
     |> cast(attrs, [:id, :features, :status, :role, :content, :note, :sequence])
   end

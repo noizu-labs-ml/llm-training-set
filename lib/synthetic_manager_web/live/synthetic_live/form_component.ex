@@ -12,9 +12,7 @@ defmodule SyntheticManagerWeb.SyntheticLive.FormComponent do
         <:subtitle>Use this form to manage synthetic records in your database.</:subtitle>
       </.header>
 
-       <div class="bg-slate-100 shadow-slate-800 shadow-sm p-2 width-full">
-            <.input field={@form[:name]} type="text" label="Name" />
-          </div>
+
 
       <.simple_form
         for={@form}
@@ -26,6 +24,9 @@ defmodule SyntheticManagerWeb.SyntheticLive.FormComponent do
       >
 
 
+    <div class="bg-slate-100 shadow-slate-800 shadow-sm p-2 width-full">
+            <.input field={@form[:name]} type="text" label="Name" />
+          </div>
 
           <div class="bg-slate-100 shadow-slate-800 shadow-sm p-2 width-full">
             <.input class="h-60" field={@form[:features]} type="select" options={feature_options(@features)} multiple={true} label="Features" />
@@ -78,6 +79,7 @@ defmodule SyntheticManagerWeb.SyntheticLive.FormComponent do
 
   @impl true
   def update(%{synthetic: synthetic} = assigns, socket) do
+    IO.inspect(synthetic, label: "---------- update")
     changeset = Synthetics.change_synthetic(synthetic)
     {:ok,
      socket
@@ -87,22 +89,38 @@ defmodule SyntheticManagerWeb.SyntheticLive.FormComponent do
   end
 
   @impl true
-  def handle_event("select_user", %{"user-id" => id, "synthetic" => attrs}, socket)  do
-    uid = id #UUID.string_to_binary!(id)
-    attrs = put_in(attrs, [:user], uid)
-    changeset = socket.assigns.synthetic
-                |> Synthetics.change_synthetic(attrs)
-                |> Map.put(:action, :validate)
-    {:noreply, assign_form(socket, changeset)}
-  end
   def handle_event("validate", %{"_target" => ["add-button"], "synthetic" => synthetic_params}, socket) do
+    IO.inspect(synthetic_params, label: "---------- validate")
+    synthetic_params = fix_messages(synthetic_params)
+    p = synthetic_params["messages"] || []
+    p = p ++ [%Synthetics.Synthetic.Message{sequence: :os.system_time(:second)}]
+    synthetic_params = Map.put(synthetic_params, :messages, p)
     changeset =
       socket.assigns.synthetic
       |> Synthetics.change_synthetic(synthetic_params)
+      |> Map.put(:action, :append)
       |> Map.put(:action, :validate)
     {:noreply, assign_form(socket, changeset)}
   end
+
+  def fix_messages(synthetic_params) do
+    case synthetic_params[:messages] || synthetic_params["messages"] do
+      m when is_list(m) or is_map(m) ->
+        m = m |> Enum.map(
+                 fn
+                   ({_,v}) ->  %{ role: v["role"] || v[:role], note: v["note"] || v[:note], content: v["content"] || v[:content], sequence: v["sequence"] || v[:sequence]}
+                   v = %{} ->  %{ role: v["role"] || v[:role], note: v["note"] || v[:note], content: v["content"] || v[:content], sequence: v["sequence"] || v[:sequence]}
+                 end)
+        put_in(synthetic_params, [:messages], m)  |> Map.delete("messages")
+      _ ->
+        synthetic_params
+    end
+  end
+
   def handle_event("validate", %{"synthetic" => synthetic_params}, socket) do
+    synthetic_params = fix_messages(synthetic_params)
+
+    IO.inspect(synthetic_params, label: "---------- validate2")
     changeset =
       socket.assigns.synthetic
       |> Synthetics.change_synthetic(synthetic_params)
@@ -111,11 +129,14 @@ defmodule SyntheticManagerWeb.SyntheticLive.FormComponent do
   end
 
   def handle_event("save", %{"synthetic" => synthetic_params}, socket) do
+    IO.inspect(synthetic_params, label: "---------- validate 2")
+    synthetic_params = fix_messages(synthetic_params)
     save_synthetic(socket, socket.assigns.action, synthetic_params)
   end
 
   defp save_synthetic(socket, :edit, synthetic_params) do
-    case Synthetics.update_synthetic(socket.assigns.synthetic, synthetic_params) do
+    IO.inspect(synthetic_params, label: "---------- save")
+    case Synthetics.update_synthetic(socket.assigns.synthetic, synthetic_params)  do
       {:ok, synthetic} ->
         notify_parent({:saved, synthetic})
         {:noreply,
@@ -128,7 +149,9 @@ defmodule SyntheticManagerWeb.SyntheticLive.FormComponent do
   end
 
   defp save_synthetic(socket, :new, synthetic_params) do
-    case Synthetics.create_synthetic(synthetic_params) do
+    synthetic_params = fix_messages(synthetic_params)
+    IO.inspect(synthetic_params, label: "---------- new")
+    case Synthetics.create_synthetic(synthetic_params) |> IO.inspect do
       {:ok, synthetic} ->
         notify_parent({:saved, synthetic})
         {:noreply,

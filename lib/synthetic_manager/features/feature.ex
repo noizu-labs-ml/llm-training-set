@@ -25,7 +25,7 @@ defmodule SyntheticManager.Features.Feature do
 
   defimpl Phoenix.HTML.Safe do
     def to_iodata(x) do
-      "#{x.id}"
+      x.id
       #  "#{Phoenix.HTML.Engine.html_escape(feature.name)} - #{Phoenix.HTML.Engine.html_escape(feature.description)}" |> IO.iodata_to_binary()
     end
   end
