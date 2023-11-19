@@ -27,6 +27,8 @@ defmodule SyntheticManagerWeb.Router do
 
     live "/synthetics/interactive", SyntheticLive.Interactive, :index
     live "/synthetics/upload", SyntheticLive.Upload, :index
+    live "/synthetics/upload/new", SyntheticLive.Upload, :new
+    live "/synthetics/upload/:id/edit", SyntheticLive.Upload, :edit
 
     live "/synthetics", SyntheticLive.Index, :index
     live "/synthetics/new", SyntheticLive.Index, :new

@@ -7,7 +7,6 @@ defmodule SyntheticManagerWeb.SyntheticLive.Show do
   @impl true
   def mount(_params, _session, socket) do
     socket = socket
-             |> assign(:features, Features.list_features())
     {:ok, socket}
   end
 
@@ -18,7 +17,6 @@ defmodule SyntheticManagerWeb.SyntheticLive.Show do
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
      |> assign(:synthetic, synthetic)
-     |> assign(:features, Features.list_features())
     }
   end
 

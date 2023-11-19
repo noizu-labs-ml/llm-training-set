@@ -10,7 +10,29 @@
 
 <.list>
   <:item title="Name"><%= @synthetic.name %></:item>
+  <:item title="Status"><%= @synthetic.status %></:item>
   <:item title="Description"><%= @synthetic.description %></:item>
+  <:item title="User"><%=
+      case @synthetic.user do
+        %{name: name} -> name
+        _ -> "Unknown"
+      end
+    %></:item>
+  <:item title="Features">
+    <p :for={feature <- @synthetic.features || []}><%= feature.category %> - <%= feature.name %></p>
+  </:item>
+  <:item title="Hidden Prompt"><%= @synthetic.hidden_prompt %></:item>
+  <:item title="Messages">
+    <div class="border p-2 m-2" :for={m <- @synthetic.messages || []}>
+    <p><span>Role:</span> <span><%= m.role %></span></p>
+    <p><span>Status:</span> <span><%= m.status %></span></p>
+    <p><span>Note:</span> <span><%= m.note %></span></p>
+    <p><span>Content:</span> <span><%= m.content %></span></p>
+    <p><span>Features:</span> <span>
+      <p :for={feature <- m.features || []}><%= feature["category"] %> - <%= feature["name"] %></p>
+    </span></p>
+    </div>
+  </:item>
 </.list>
 
 <.back navigate={~p"/synthetics"}>Back to synthetics</.back>
@@ -26,7 +48,6 @@
     id={@synthetic.id}
     title={@page_title}
     action={@live_action}
-    features={@features}
     synthetic={@synthetic}
     patch={~p"/synthetics/#{@synthetic}"}
   />

@@ -50,21 +50,6 @@ defmodule SyntheticManager.Synthetics do
   end
 
 
-  def fix_messages(synthetic_params) do
-    case synthetic_params[:messages] || synthetic_params["messages"] do
-      m when is_list(m) or is_map(m) ->
-        m = m |> Enum.map(
-                   fn
-                     v = %Synthetic.Message{} -> v
-                     ({_,v}) -> %{ role: v["role"] || v[:role], note: v["note"] || v[:note], content: v["content"] || v[:content], sequence: v["sequence"] || v[:sequence]}
-                     v = %{} -> %{ role: v["role"] || v[:role], note: v["note"] || v[:note], content: v["content"] || v[:content], sequence: v["sequence"] || v[:sequence]}
-                   end)
-        put_in(synthetic_params, [:messages], m)  |> Map.delete("messages")
-      _ ->
-        synthetic_params
-    end
-  end
-
   @doc """
   Creates a synthetic.
 
@@ -78,7 +63,6 @@ defmodule SyntheticManager.Synthetics do
 
   """
   def create_synthetic(attrs \\ %{}) do
-    attrs = fix_messages(attrs)
     IO.puts """
     ------------
     Create: #{inspect attrs}
@@ -104,10 +88,80 @@ defmodule SyntheticManager.Synthetics do
       messages = messages
                  |> Enum.map(
                       fn
-                        v = %Synthetic.Message{} -> v
-                        ({_,v}) ->  %{ role: v["role"] || v[:role], note: v["note"] || v[:note], content: v["content"] || v[:content], sequence: v["sequence"] || v[:sequence]}
-                        v = %{} ->  %{ role: v["role"] || v[:role], note: v["note"] || v[:note], content: v["content"] || v[:content], sequence: v["sequence"] || v[:sequence]}
-                      end)
+                        v = %Synthetic.Message{} -> v |> IO.inspect(label: "EXISTING")
+                        ({_,v}) ->
+                          features = Enum.map((v["features"] || v[:features] || []) |> IO.inspect(label: "MESSAGE FEATURES"),
+                                       fn
+                                         "add-" <> x ->
+                                           SyntheticManager.Features.get_feature!(UUID.string_to_binary!(x))
+                                           |> case do
+                                                x = %{} -> %{id: x.id, category: x.category, name: x.name}
+                                                _ -> nil
+                                              end
+                                         "has-" <> _ ->  nil
+                                         x = %{id: _} -> x
+                                         x = %{"id" => _} -> x
+                                         x = <<uuid::128>> ->
+                                           SyntheticManager.Features.get_feature!(x)
+                                           |> case do
+                                                x = %{} -> %{id: x.id, category: x.category, name: x.name}
+                                                _ -> nil
+                                              end
+                                         x when is_bitstring(x) ->
+                                           SyntheticManager.Features.get_feature!(UUID.string_to_binary!(x))
+                                           |> case do
+                                                x = %{} -> %{id: x.id, category: x.category, name: x.name}
+                                                _ -> nil
+                                              end
+                                         _ -> nil
+                                       end
+                                     ) |> Enum.reject(&is_nil/1)
+                          %{
+                            features: features,
+                            id: v["id"] || v[:id],
+                            role: v["role"] || v[:role],
+                            status: v["status"] || v[:status],
+                            note: v["note"] || v[:note],
+                            content: v["content"] || v[:content],
+                            sequence: v["sequence"] || v[:sequence]
+                          }
+                        v = %{} ->
+                          features = Enum.map((v["features"] || v[:features] || []) |> IO.inspect(label: "MESSAGE FEATURES"),
+                                       fn
+                                         "add-" <> x ->
+                                           SyntheticManager.Features.get_feature!(UUID.string_to_binary!(x))
+                                           |> case do
+                                                x = %{} -> %{id: x.id, category: x.category, name: x.name}
+                                                _ -> nil
+                                              end
+                                         "has-" <> _ ->  nil
+                                         x = %{id: _} -> x
+                                         x = %{"id" => _} -> x
+                                         x = <<uuid::128>> ->
+                                           SyntheticManager.Features.get_feature!(x)
+                                           |> case do
+                                                x = %{} -> %{id: x.id, category: x.category, name: x.name}
+                                                _ -> nil
+                                              end
+                                         x when is_bitstring(x) ->
+                                           SyntheticManager.Features.get_feature!(UUID.string_to_binary!(x))
+                                           |> case do
+                                                x = %{} -> %{id: x.id, category: x.category, name: x.name}
+                                                _ -> nil
+                                              end
+                                         _ -> nil
+                                       end
+                                     ) |> Enum.reject(&is_nil/1)
+                          %{
+                            features: features,
+                            id: v["id"] || v[:id],
+                            role: v["role"] || v[:role],
+                            status: v["status"] || v[:status],
+                            note: v["note"] || v[:note],
+                            content: v["content"] || v[:content],
+                            sequence: v["sequence"] || v[:sequence]
+                          }
+                      end) |> IO.inspect(label: "EMBED MESSAGES")
       change_set
       |> Ecto.Changeset.put_embed(:messages, messages)
     else
@@ -116,11 +170,14 @@ defmodule SyntheticManager.Synthetics do
   end
 
   def embed_features(change_set, attrs) do
-    change_set2 = if uid = (attrs[:user] || attrs["user"]) do
+    IO.inspect(change_set, label: "EMBED FEATURES INTO")
+    change_set = if uid = (attrs[:user] || attrs["user"]) do
       user = case uid do
+        "add-" <> x ->  UUID.string_to_binary!(x) |> SyntheticManager.Users.get_user!()
         x = %{} -> x
         x = <<uuid::128>> -> x |> SyntheticManager.Users.get_user!()
         x when is_bitstring(x) -> UUID.string_to_binary!(x) |> SyntheticManager.Users.get_user!()
+        _ -> nil
       end
 
       change_set
@@ -129,20 +186,22 @@ defmodule SyntheticManager.Synthetics do
       change_set
     end
 
-    features = (attrs[:features] || attrs["features"])
+    features = (attrs[:features] || attrs["features"]) |> IO.inspect(label: "FEATURE LIST")
     if is_list(features) && length(features) > 0 do
       features = Enum.map(features,
         fn
+          "add-" <> x ->  UUID.string_to_binary!(x)
+          "has-" <> _ ->  nil
           %{identifier: x} -> x
           x = <<uuid::128>> -> x
           x when is_bitstring(x) -> UUID.string_to_binary!(x)
         end
-      )
-      features = Repo.all(from i in Feature, where: i.id in ^features)
-      change_set2
+      ) |> Enum.reject(&is_nil/1)
+      features = Repo.all(from i in Feature, where: i.id in ^features) |> IO.inspect(label: "Features")
+      change_set
       |> Ecto.Changeset.put_assoc(:features, features)
     else
-      change_set2
+      change_set
     end
   end
 
@@ -170,8 +229,7 @@ defmodule SyntheticManager.Synthetics do
 
   """
   def update_synthetic(%Synthetic{} = synthetic, attrs) do
-    attrs = fix_messages(attrs)
-    t = Map.drop(attrs, [:user, "user", :features, "features", :messages, "messages"])
+    t = Map.drop(attrs, [:organization, "organization", :user, "user", :features, "features", :messages, "messages"])
     synthetic
     |> Synthetic.changeset(t)
     |> embed_features(attrs)
@@ -205,7 +263,6 @@ defmodule SyntheticManager.Synthetics do
 
   """
   def change_synthetic(%Synthetic{} = synthetic, attrs \\ %{}) do
-    attrs = fix_messages(attrs)
     t = Map.drop(attrs, [:user, "user", :features, "features", :messages, "messages"])
     synthetic
     |> Synthetic.changeset(t)

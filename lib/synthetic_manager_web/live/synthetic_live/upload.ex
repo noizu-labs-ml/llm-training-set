@@ -6,91 +6,12 @@ defmodule SyntheticManagerWeb.SyntheticLive.Upload do
   def mount(_params, _session, socket) do
     raw =
       """
-      - name: "Elixir Code Helper"
-        group: Prefixes-CodeGeneration
-        facets:
-          - Code Generation
-        notes: "This LLM assists with generating Elixir code for different functionalities as requested by the user."
-        messages:
-          - role: system
-            content: |
-              ⌜🖥️➤
-              @with NPL@0.5
-              # MASTER PROMPT
-              You are a pair programmer assistant with expertise in Elixir. Your main role is to assist users by generating Elixir code based on the functionality descriptions they provide.
-              ⌟
-            note: "Sets up the LLM as an Elixir pair programming assistant."
-          - role: user
-            content: "Can you create a function to check if a number is prime?"
-            note: "First user request for a prime-checking function."
-          - role: assistant
-            content: |
-              ```elixir
-              defmodule MathUtils do
-                def is_prime(number) when number <= 1 do
-                  false
-                end
-                def is_prime(number) do
-                  Enum.none?(2..div(number, 2), fn x -> rem(number, x) == 0 end)
-                end
-              end
-              ```
-            note: "Assistant outputs an Elixir function for checking prime numbers."
-          - role: user
-            content: "I need a function that reverses each string in a list."
-            note: "Second user request for string reversal."
-          - role: assistant
-            content: |
-              ```elixir
-              defmodule StringUtils do
-                def reverse_strings(string_list) do
-                  Enum.map(string_list, &String.reverse/1)
-                end
-              end
-              ```
-            note: "Assistant provides an Elixir function to reverse strings."
-          - role: user
-            content: "Write a function that returns the factorial of a number"
-            note: "Third user request for a factorial function."
-          - role: assistant
-            content: |
-              ```elixir
-              defmodule MathUtils do
-                def factorial(0), do: 1
-                def factorial(n) when n > 0 do
-                  n * factorial(n - 1)
-                end
-              end
-              ```
-            note: "Assistant generates an Elixir function to calculate factorial."
-          - role: user
-            content: "Please generate an Elixir function that merges two lists and removes duplicates."
-            note: "Fourth user request for a list merge function."
-          - role: assistant
-            content: |
-              ```elixir
-              defmodule ListUtils do
-                def merge_unique(list1, list2) do
-                  list1 ++ list2 |> Enum.uniq()
-                end
-              end
-              ```
-            note: "Assistant writes an Elixir function to merge lists and remove duplicates."
-          - role: user
-            content: "How would I write a function to fetch and return the current system time formatted as YYYY-MM-DD HH:MM:SS?"
-            note: "Fifth user request for a time fetching function."
-          - role: assistant
-            content: |
-              ```elixir
-              defmodule TimeUtils do
-                def current_system_time do
-                  DateTime.now!("Etc/UTC") |> DateTime.truncate(:second) |> DateTime.to_string()
-                end
-              end
-              ```
       """
-    socket = assign(socket, :raw, raw)
-
+    socket = socket
+             |> assign(:raw, raw)
+             |> assign(:synthetics, socket.assigns[:synthetics] || [])
+             |> assign(:live_action, :upload)
+             |> assign(:page_title, :upload)
     {:ok, socket}
   end
   @keith 1
@@ -113,19 +34,70 @@ defmodule SyntheticManagerWeb.SyntheticLive.Upload do
       _ -> nil
     end
   end
-  defp role(role), do: @roles[role]
+  defp role(role) do
+    Enum.find_value(SyntheticManager.MessageRoleEnum.values, :unknown, & (&1 == role || "#{&1}" == role  ) && &1)
+  end
+  defp status(status) do
+    Enum.find_value(SyntheticManager.EntityStatusEnum.values, :enabled, & (&1 == status || "#{&1}" == status  ) && &1)
+  end
   defp synthetic_id("ref.synthetic." <> id), do: id
   defp synthetic_id(_), do: nil
   defp org_id("ref.organization." <> id), do: id
   defp org_id(_), do: nil
   defp user_id("ref.user." <> id), do: id
   defp user_id(_), do: nil
+  defp group_id("ref.group." <> id), do: id
+  defp group_id(_), do: nil
   defp message_id("ref.message." <> id), do: id
   defp message_id(_), do: nil
   defp feature_id("ref.feature." <> id), do: id
   defp feature_id(_), do: nil
 
+
   @impl true
+  def handle_info({SyntheticManagerWeb.SyntheticLive.FormComponent, {:modified, cs}},  socket) do
+    synthetics = socket.assigns.synthetics
+                 |> put_in([Access.key(socket.assigns.synthetic_index)], cs)
+    synthetic = synthetics[socket.assigns.synthetic_index]
+    js = hide_modal("synthetic-upload-modal")
+
+    {:noreply,
+      socket
+      |> assign(:synthetics, synthetics)
+      |> assign(:synthetic, synthetic)
+      |> assign(:live_action, :upload)
+      |> push_event("js_push", %{js: js.ops})
+    }
+  end
+
+  def handle_event("save-all", _, socket) do
+    synthetics = Enum.map(socket.assigns.synthetics,
+                   fn ({key, synthetic}) ->
+                     with {:ok, synthetic} <- synthetic |> SyntheticManager.Repo.insert() do
+                       {key, synthetic}
+                     end
+                   end)
+                 |> Enum.reject(&is_nil/1)
+                 |> Map.new()
+    {:noreply,
+      socket
+      |> assign(:synthetics, synthetics)
+    }
+  end
+  def handle_event("edit-synthetic-" <> id, form, socket) do
+    id = String.to_integer(id)
+    synthetic = socket.assigns.synthetics[id]
+
+    js = show_modal("synthetic-upload-modal")
+
+    {:noreply,
+      socket
+      |> assign(:synthetic_index, id)
+      |> assign(:synthetic, synthetic)
+      |> assign(:live_action, :modify)
+      |> push_event("js_push", %{js: js.ops})
+    }
+  end
   def handle_event("synthetics:upload", form, socket) do
     case YamlElixir.read_all_from_string(form["upload"]) do
       {:ok, [json]} when is_list(json) ->
@@ -140,8 +112,9 @@ defmodule SyntheticManagerWeb.SyntheticLive.Upload do
                                   fn
                                     m = %{"role" => role, "content"  => content}, sequence ->
                                     role = role(role)
+                                    status = status(m["status"])
                                     note = m["note"] || ""
-                                    id = message_id(m["id"])
+                                    id = message_id(m["id"]) || UUID.uuid4()
                                     features = (x["features"] || [])
                                                |> Enum.map(&feature_id/1)
                                                |> Enum.reject(&is_nil/1)
@@ -154,6 +127,7 @@ defmodule SyntheticManagerWeb.SyntheticLive.Upload do
                                       content: content,
                                       sequence: sequence,
                                       role: role,
+                                      status: status,
                                       note: note,
                                       inserted_at: inserted_at,
                                       updated_at: updated_at,
@@ -162,7 +136,8 @@ defmodule SyntheticManagerWeb.SyntheticLive.Upload do
                                   end
                                 ) |> Enum.reject(&is_nil/1)
                                 %Synthetic{
-                                  id: synthetic_id(x["id"]),
+                                  id: synthetic_id(x["id"]) || nil,
+                                  status: status(x["status"]),
                                   name: x["name"],
                                   description: x["description"] || x["notes"],
                                   hidden_prompt: x["hidden_prompt"],
@@ -177,9 +152,14 @@ defmodule SyntheticManagerWeb.SyntheticLive.Upload do
                             end
                           )
                   |> Enum.reject(&is_nil/1)
+                  |> Enum.with_index(fn(v,i) -> {i,v} end)
+                  |> Map.new()
+
          {
            :noreply,
-           socket |> assign(:json, entries)
+           socket
+           |> assign(:synthetics, entries)
+           |> assign(:synthetic, nil)
          }
       _ ->
         # Error

@@ -21,6 +21,13 @@ defmodule SyntheticManager.Features do
     Repo.all(Feature)
   end
 
+  def filter_features(filter) do
+    filter = "%#{filter}%"
+    q = from f in Feature,
+             where: like(f.name, ^filter)
+    Repo.all(q)
+  end
+
   @doc """
   Gets a single feature.
 

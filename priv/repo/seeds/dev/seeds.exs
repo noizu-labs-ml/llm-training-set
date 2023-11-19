@@ -1,5 +1,5 @@
 # List of subscript files to be executed
-subscript_files = ["seed_features.exs","seed_organizations.exs", "seed_users.exs"]
+subscript_files = ["seed_features.exs","seed_organizations.exs", "seed_users.exs", "seed_groups.exs"]
 
 # Execute each subscript
 dir = Path.dirname(__ENV__.file)

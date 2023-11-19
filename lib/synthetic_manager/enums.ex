@@ -7,7 +7,7 @@ end
 
 defmodule SyntheticManager.MessageRoleEnum do
   def type(), do: :message_role
-  def values(), do: [:user, :assistant, :function, :function_call, :function_response, :other, :unknown]
+  def values(), do: [:system, :user, :assistant, :function, :function_call, :function_response, :other, :unknown]
 end
 
 defmodule SyntheticManager.FeatureCategoryEnum do

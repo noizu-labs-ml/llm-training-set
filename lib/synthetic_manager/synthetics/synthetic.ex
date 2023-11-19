@@ -25,7 +25,7 @@ defmodule SyntheticManager.Synthetics.Synthetic do
     # Embeds
     embeds_many :messages, Message, on_replace: :delete do
       field :features, {:array, :map}
-      field :role, Ecto.Enum, values: [:user, :assistant, :system, :function_call, :function_response]
+      field :role, Ecto.Enum, values: SyntheticManager.MessageRoleEnum.values(), default: :unknown
       field :content, :string
       field :note, :string
       field :status, Ecto.Enum, values: SyntheticManager.EntityStatusEnum.values(), default: :pending

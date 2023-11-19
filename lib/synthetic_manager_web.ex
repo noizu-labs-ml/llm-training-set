@@ -85,6 +85,7 @@ defmodule SyntheticManagerWeb do
       import Phoenix.HTML
       # Core UI components and translation
       import SyntheticManagerWeb.CoreComponents
+      import SyntheticManagerWeb.TailWindComponents
       import SyntheticManagerWeb.Gettext
 
       # Shortcut for generating JS commands

@@ -21,6 +21,13 @@ defmodule SyntheticManager.Users do
     Repo.all(User)
   end
 
+  def filter_users(%{name: filter}) do
+    filter = "%#{filter}%"
+    q = from f in User,
+             where: like(f.name, ^filter)
+    Repo.all(q)
+  end
+
   @doc """
   Gets a single user.
 

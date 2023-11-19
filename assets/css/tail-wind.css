@@ -1,0 +1,143 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+    .tailwind-input {
+        @apply py-2;
+    }
+
+    .tailwind-input .textarea-input {
+        @apply block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6;
+    }
+
+    div.tailwind-input div.input-wrapper.combo-select {
+        @apply relative mt-2 flex rounded-md shadow-sm border-gray-300 border bg-slate-100 p-2 ;
+    }
+    div.tailwind-input div.input-wrapper.combo-select nav .tab {
+        @apply border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 w-1/4 border-b-2 py-4 px-1 text-center text-sm font-medium;
+    }
+
+    div.tailwind-input .search-selected {
+        @apply z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm;
+    }
+
+    div.tailwind-input .search-dropdown{
+        @apply absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-2 px-4 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm;
+    }
+    div.tailwind-input[aria-expanded="false"] .search-dropdown {
+        @apply hidden;
+    }
+    div.tailwind-input[aria-expanded="true"] .search-dropdown {
+        @apply block;
+    }
+
+
+    div.tailwind-input .search-filter{
+        @apply w-full border-0 py-1.5 pl-3 pr-12 text-gray-900 sm:text-sm sm:leading-6;
+    }
+    div.tailwind-input[aria-hidden="true"] .search-filter {
+        @apply hidden;
+    }
+    div.tailwind-input[aria-hidden="false"] .search-filter {
+        @apply block;
+    }
+    div.tailwind-input[aria-hidden="true"] .search-current {
+        @apply block;
+    }
+    div.tailwind-input[aria-hidden="false"] .search-current {
+        @apply hidden;
+    }
+
+
+
+    div.tailwind-input .select-dropdown{
+        @apply absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm;
+    }
+    div.tailwind-input[aria-expanded="false"] .select-dropdown {
+        @apply hidden;
+    }
+    div.tailwind-input[aria-expanded="true"] .select-dropdown {
+        @apply block;
+    }
+
+
+    div.tailwind-input div.input-wrapper.combo-select nav .tab[aria-current="page"] {
+        @apply border-indigo-500 text-indigo-600 w-1/4 border-b-2 py-4 px-1 text-center text-sm font-medium;
+    }
+    div.tailwind-input div.input-wrapper.combo-select .page {
+        @apply hidden;
+    }
+    div.tailwind-input div.input-wrapper.combo-select .page[aria-current="page"] {
+        @apply block;
+    }
+
+    div.tailwind-input div.input-wrapper.text {
+        @apply relative mt-2 flex rounded-md shadow-sm border-gray-300 border bg-white ;
+    }
+
+    div.tailwind-input .input-wrapper.select {
+        @apply relative mt-2 flex rounded-md shadow-sm border-gray-300 border bg-white ;
+    }
+    div.tailwind-input div.input-wrapper.combo-select {
+        @apply relative mt-2 flex rounded-md shadow-sm border-gray-300 border bg-slate-100 p-2 ;
+    }
+
+    div.tailwind-input div.input-wrapper .icon {
+        @apply pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3;
+    }
+
+    div.tailwind-input div.input-wrapper .right-icon {
+        @apply pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3;
+    }
+
+    div.tailwind-input div.input-wrapper .add-on {
+        @apply inline-flex py-1.5 items-center border-r border-gray-300 px-3 text-gray-500 sm:text-sm;
+    }
+
+    div.tailwind-input div.input-wrapper .add-on.inline {
+        @apply border-none;
+    }
+
+    div.tailwind-input div.input-wrapper .right-add-on {
+        @apply inline-flex py-1.5 items-center border-l border-gray-300 px-3 text-gray-500 sm:text-sm;
+    }
+    div.tailwind-input div.input-wrapper .right-add-on.inline {
+        @apply border-none;
+    }
+    div.tailwind-input div.input-wrapper.text input {
+        @apply block w-full border-none py-1.5 text-gray-900 placeholder:text-gray-400 bg-transparent sm:text-sm sm:leading-6 ring-0 focus:ring-0 ;
+    }
+
+    div.tailwind-input div.input-wrapper.text input.add-on {
+        @apply border-l-0;
+    }
+
+    div.tailwind-input div.input-wrapper.text input.right-add-on {
+        @apply border-r-0;
+    }
+
+    div.tailwind-input div.input-wrapper.text input.right-add-on.add-on {
+
+    }
+
+    div.tailwind-input div.input-wrapper.text input.error {
+        @apply border-rose-400 focus:border-rose-400;
+    }
+
+    div.tailwind-input div.input-wrapper.text input.clean {
+
+    }
+
+    .tailwind-input .input-description {
+        @apply mt-2 text-sm text-gray-500;
+    }
+
+    .tailwind-input .input-description.clean {
+        @apply text-gray-500;
+    }
+
+    .tailwind-input .input-description.error {
+        @apply text-red-500;
+    }

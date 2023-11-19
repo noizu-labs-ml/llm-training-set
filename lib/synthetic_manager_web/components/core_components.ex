@@ -211,7 +211,7 @@ defmodule SyntheticManagerWeb.CoreComponents do
       phx-mounted={@show && show_modal(@id)}
       phx-remove={hide_modal(@id)}
       data-cancel={JS.exec(@on_cancel, "phx-remove")}
-      class="relative z-50 hidden"
+      class="relative z-50 hidden super-modal"
     >
       <div id={"#{@id}-bg"} class="bg-zinc-50/90 fixed inset-0 transition-opacity" aria-hidden="true" />
       <div
@@ -849,7 +849,7 @@ defmodule SyntheticManagerWeb.CoreComponents do
         <%= @label %>
       </label>
       <div class="relative mt-2">
-        <%= Phoenix.HTML.Form.select(@form, @field, Enum.reduce(@users |> IO.inspect(label: :users), [],
+        <%= Phoenix.HTML.Form.select(@form, @field, Enum.reduce(@users, [],
            fn
              {:cont, []}, acc -> acc
              user, acc ->
@@ -885,7 +885,6 @@ defmodule SyntheticManagerWeb.CoreComponents do
   attr :users, :list, required: true
   def pretty_user_selector(assigns) do
     ~H"""
-    <% IO.inspect @field %>
     <div>
       <label for={@field.id} class="block text-sm font-medium leading-6 text-gray-900">Select User</label>
       <div class="mt-1 relative">

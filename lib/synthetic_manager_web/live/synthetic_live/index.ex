@@ -7,8 +7,6 @@ defmodule SyntheticManagerWeb.SyntheticLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    socket = socket
-             |> assign(:features, Features.list_features())
     {:ok, stream(socket, :synthetics, Synthetics.list_synthetics())}
   end
 
@@ -21,21 +19,18 @@ defmodule SyntheticManagerWeb.SyntheticLive.Index do
     socket
     |> assign(:page_title, "Edit Synthetic")
     |> assign(:synthetic, Synthetics.get_synthetic!(id, :hydrate))
-    |> assign(:features, Features.list_features())
   end
 
   defp apply_action(socket, :new, _params) do
     socket
     |> assign(:page_title, "New Synthetic")
     |> assign(:synthetic, %Synthetic{features: nil})
-    |> assign(:features, Features.list_features())
   end
 
   defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "Listing Synthetics")
     |> assign(:synthetic, nil)
-    |> assign(:feature, Features.list_features())
   end
 
   @impl true
