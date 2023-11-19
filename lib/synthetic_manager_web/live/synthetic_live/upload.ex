@@ -12,6 +12,9 @@ defmodule SyntheticManagerWeb.SyntheticLive.Upload do
              |> assign(:synthetics, socket.assigns[:synthetics] || [])
              |> assign(:live_action, :upload)
              |> assign(:page_title, :upload)
+             |> assign(:default_user, nil)
+             |> assign(:default_organization, nil)
+             |> assign(:default_group, nil)
     {:ok, socket}
   end
   @keith 1

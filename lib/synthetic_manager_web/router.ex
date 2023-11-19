@@ -25,6 +25,25 @@ defmodule SyntheticManagerWeb.Router do
     live "/features/:id", FeatureLive.Show, :show
     live "/features/:id/show/edit", FeatureLive.Show, :edit
 
+    live "/organizations", OrganizationLive.Index, :index
+    live "/organizations/new", OrganizationLive.Index, :new
+    live "/organizations/:id/edit", OrganizationLive.Index, :edit
+    live "/organizations/:id", OrganizationLive.Show, :show
+    live "/organizations/:id/show/edit", OrganizationLive.Show, :edit
+
+    live "/users", UserLive.Index, :index
+    live "/users/new", UserLive.Index, :new
+    live "/users/:id/edit", UserLive.Index, :edit
+    live "/users/:id", UserLive.Show, :show
+    live "/users/:id/show/edit", UserLive.Show, :edit
+
+    live "/groups", GroupLive.Index, :index
+    live "/groups/new", GroupLive.Index, :new
+    live "/groups/:id/edit", GroupLive.Index, :edit
+    live "/groups/:id", GroupLive.Show, :show
+    live "/groups/:id/show/edit", GroupLive.Show, :edit
+
+
     live "/synthetics/interactive", SyntheticLive.Interactive, :index
     live "/synthetics/upload", SyntheticLive.Upload, :index
     live "/synthetics/upload/new", SyntheticLive.Upload, :new
