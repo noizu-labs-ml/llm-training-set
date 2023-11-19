@@ -20,7 +20,7 @@ defmodule SyntheticManager.Synthetics do
 
   """
   def list_synthetics do
-    from(e in Synthetic, preload: [:features]) |> Repo.all()
+    from(e in Synthetic, preload: [:features, :user, :organization, :group]) |> Repo.all()
   end
 
 

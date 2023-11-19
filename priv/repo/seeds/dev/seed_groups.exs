@@ -10,6 +10,15 @@ unless SyntheticManager.Repo.get(SyntheticManager.SeedTags.Tag, tag_one)  do
   %{template | name: "Misc.", description: "Uncategorized DataSets"}
   |> Groups.create_group()
 
+  %{template | name: "Block", description: "Code Block Focused Group"}
+  |> Groups.create_group()
+  %{template | name: "Agent", description: "Agent Focused Group"}
+  |> Groups.create_group()
+  %{template | name: "BasicSyntax", description: "Syntax Focused Group"}
+  |> Groups.create_group()
+  %{template | name: "Prefix", description: "Prompt Prefix Focused Group"}
+  |> Groups.create_group()
+
   IO.puts "[#{tag_one}] Executed"
   SyntheticManager.Repo.insert!(%SyntheticManager.SeedTags.Tag{name: tag_one, inserted_at: DateTime.utc_now(), updated_at: DateTime.utc_now()})
 else
