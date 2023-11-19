@@ -15,6 +15,7 @@ defmodule SyntheticManager.Synthetics.Synthetic do
     # Belongs To
     belongs_to :user, SyntheticManager.Users.User, type: Ecto.UUID
     belongs_to :organization, SyntheticManager.Organizations.Organization, type: Ecto.UUID
+    belongs_to :group, SyntheticManager.Groups.Group, type: Ecto.UUID
 
     # Many To Many
     many_to_many :features, SyntheticManager.Features.Feature,
@@ -42,11 +43,12 @@ defmodule SyntheticManager.Synthetics.Synthetic do
   def changeset(feature, attrs) do
     IO.inspect(attrs,label: "CHANGESET-1")
     feature
-    |> cast(attrs, [:name, :description, :hidden_prompt, :functions, :user_id, :organization_id, :status, :meta])
+    |> cast(attrs, [:name, :description, :hidden_prompt, :functions, :group_id, :user_id, :organization_id, :status, :meta])
     |> validate_required([:name])
     |> cast_assoc(:features)
     |> cast_assoc(:user)
     |> cast_assoc(:organization)
+    |> cast_assoc(:group)
     |> cast_embed(:messages, with: &message_changeset/2)
   end
 

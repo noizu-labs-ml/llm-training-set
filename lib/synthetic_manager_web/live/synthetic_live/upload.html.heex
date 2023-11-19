@@ -1,5 +1,62 @@
 <main id="body-root-layout" phx-hook="JS_FORWARD">
 <h1>Upload Yaml Changesets</h1>
+
+    <.simple_form
+    for={%{"user" => @default_user, "organization" => @default_organization, "group" => @default_group}}
+    id="synthetic-form"
+
+    phx-change="validate"
+    phx-submit="save"
+
+    >
+        <!-- Form:User -->
+        <.tailwind_input
+        id="select-user"
+        name="user"
+        value={@default_user}
+        type="search"
+        search={assigns[:user_filter_term] || ""}
+        options={@user_filter}
+        hidden_label="Select User"
+        >
+
+
+        <:display_option :let={%{id: id, option: option}} >
+            Name: <%= option.name %>
+        </:display_option>
+        </.tailwind_input>
+
+        <!-- Form:Group -->
+        <.tailwind_input
+        id="select-group"
+        name="group"
+        value={@default_group}
+        type="search"
+        search={assigns[:group_filter_term] || ""}
+        options={@group_filter}
+        hidden_label="Select Group"
+        >
+        <:display_option :let={%{id: id, option: option}} >
+            Name: <%= option.name %>
+        </:display_option>
+        </.tailwind_input>
+
+        <!-- Form:Org -->
+        <.tailwind_input
+        id="select-org"
+        name="organization"
+        value={@default_organization}
+        type="search"
+        search={assigns[:organization_filter_term] || ""}
+        options={@organization_filter}
+        hidden_label="Select Org"
+        >
+        <:display_option :let={%{id: id, option: option}} >
+            Name: <%= option.name %>
+        </:display_option>
+        </.tailwind_input>
+
+    </.simple_form>
 <form phx-submit="synthetics:upload">
     <textarea name="upload"  rows="20" class="w-full h-full" multiple="true" >
     <%= @raw %>

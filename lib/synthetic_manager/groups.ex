@@ -21,6 +21,13 @@ defmodule SyntheticManager.Groups do
     Repo.all(Group)
   end
 
+  def filter_groups(filter) do
+    filter = "%#{filter}%"
+    q = from f in Group,
+             where: like(f.name, ^filter)
+    Repo.all(q)
+  end
+
   @doc """
   Gets a single group.
 

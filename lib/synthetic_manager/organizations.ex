@@ -20,7 +20,12 @@ defmodule SyntheticManager.Organizations do
   def list_organizations do
     Repo.all(Organization)
   end
-
+  def filter_organizations(filter) do
+    filter = "%#{filter}%"
+    q = from f in Organization,
+             where: like(f.name, ^filter)
+    Repo.all(q)
+  end
   @doc """
   Gets a single organization.
 

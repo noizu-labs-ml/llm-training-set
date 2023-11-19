@@ -13,6 +13,7 @@ defmodule SyntheticManager.Repo.Migrations.CreateSynthetics do
       add :messages, :jsonb, null: true
       add :user_id, references(:user), null: true
       add :organization_id, references(:organization), null: true
+      add :group_id, references(:group), null: true
       timestamps(type: :utc_datetime_usec, null: true)
     end
 

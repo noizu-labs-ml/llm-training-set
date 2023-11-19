@@ -12,9 +12,12 @@ defmodule SyntheticManagerWeb.SyntheticLive.Upload do
              |> assign(:synthetics, socket.assigns[:synthetics] || [])
              |> assign(:live_action, :upload)
              |> assign(:page_title, :upload)
-             |> assign(:default_user, nil)
+             |> assign(:default_user,  nil)
+             |> assign(:user_filter, SyntheticManager.Users.list_users() |> Enum.map(& %{value: &1.id, key: &1}))
              |> assign(:default_organization, nil)
+             |> assign(:organization_filter, SyntheticManager.Organizations.list_organizations() |> Enum.map(& %{value: &1.id, key: &1}))
              |> assign(:default_group, nil)
+             |> assign(:group_filter, SyntheticManager.Groups.list_groups() |> Enum.map(& %{value: &1.id, key: &1}))
     {:ok, socket}
   end
   @keith 1
@@ -73,6 +76,57 @@ defmodule SyntheticManagerWeb.SyntheticLive.Upload do
     }
   end
 
+  def handle_event("search", params = %{ "select-organization" => filter}, socket) do
+    search = SyntheticManager.Organizations.filter_organizations(filter)
+             |> Enum.map(& %{value: &1.id, key: &1})
+    {:noreply,
+      socket
+      |> assign(:organization_filter_term, filter)
+      |> assign(:organization_filter, search)
+    }
+  end
+
+  def handle_event("search", params = %{ "select-group" => filter}, socket) do
+    search = SyntheticManager.Groups.filter_groups(filter)
+             |> Enum.map(& %{value: &1.id, key: &1})
+    {:noreply,
+      socket
+      |> assign(:group_filter_term, filter)
+      |> assign(:group_filter, search)
+    }
+  end
+  def handle_event("search", params = %{ "select-user" => filter}, socket) do
+    search = SyntheticManager.Users.filter_users(filter)
+             |> Enum.map(& %{value: &1.id, key: &1})
+    {:noreply,
+      socket
+      |> assign(:user_filter_term, filter)
+      |> assign(:user_filter, search)
+    }
+  end
+
+
+  def handle_event("validate", %{"edit-user" => user}, socket) do
+    user = SyntheticManager.Users.get_user!(UUID.string_to_binary!(user))
+    socket = socket
+             |> assign(:default_user,  user)
+    {:noreply,socket}
+  end
+  def handle_event("validate", %{"edit-group" => user}, socket) do
+    user = SyntheticManager.Groups.get_group!(UUID.string_to_binary!(user))
+    socket = socket
+             |> assign(:default_group,  user)
+    {:noreply,socket}
+  end
+  def handle_event("validate", %{"edit-organization" => user}, socket) do
+    user = SyntheticManager.Organizations.get_organization!(UUID.string_to_binary!(user))
+    socket = socket
+             |> assign(:default_organization,  user)
+    {:noreply,socket}
+  end
+  def handle_event("validate", _, socket) do
+    {:noreply,socket}
+  end
   def handle_event("save-all", _, socket) do
     synthetics = Enum.map(socket.assigns.synthetics,
                    fn ({key, synthetic}) ->
@@ -144,8 +198,9 @@ defmodule SyntheticManagerWeb.SyntheticLive.Upload do
                                   name: x["name"],
                                   description: x["description"] || x["notes"],
                                   hidden_prompt: x["hidden_prompt"],
-                                  organization_id: org_id(x["organization_id"]),
-                                  user_id: user_id(x["user_id"]),
+                                  organization_id: org_id(x["organization_id"]) || socket.assigns.default_organization && socket.assigns.default_organization.id,
+                                  user_id: user_id(x["user_id"]) || socket.assigns.default_user && socket.assigns.default_user.id,
+                                  group_id: group_id(x["group_id"]) || socket.assigns.default_group && socket.assigns.default_group.id,
                                   features: features,
                                   messages: messages,
                                   inserted_at: extract_time(x["inserted_at"]),
